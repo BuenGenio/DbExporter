@@ -99,7 +99,7 @@ class DbExportHandlerServiceProvider extends ServiceProvider
      */
     protected function registerMigrationsCommand()
     {
-        $this->app['dbe::migrations'] = $this->app->share(function()
+        $this->app->singleton('dbe::migrations', function()
         {
             return new Commands\MigrationsGeneratorCommand($this->handler);
         });
@@ -110,7 +110,7 @@ class DbExportHandlerServiceProvider extends ServiceProvider
      */
     protected function registerSeedsCommand()
     {
-        $this->app['dbe::seeds'] = $this->app->share(function()
+        $this->app->singleton('dbe::seeds', function()
         {
             return new Commands\SeedGeneratorCommand($this->handler);
         });
@@ -118,7 +118,7 @@ class DbExportHandlerServiceProvider extends ServiceProvider
 
     protected function registerRemoteCommand()
     {
-        $this->app['dbe::remote'] = $this->app->share(function()
+        $this->app->singleton('dbe::remote', function()
         {
             return new Commands\CopyToRemoteCommand(new Server);
         });
@@ -129,7 +129,7 @@ class DbExportHandlerServiceProvider extends ServiceProvider
      */
     protected function registerDbExportHandler()
     {
-        $this->app['DbExportHandler'] = $this->app->share(function()
+        $this->app->singleton('DbExportHandler', function()
         {
             return $this->handler;
         });
