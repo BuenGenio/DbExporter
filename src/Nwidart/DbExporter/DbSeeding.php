@@ -4,6 +4,17 @@ use Config, DB, Str, File;
 
 class DbSeeding extends DbExporter
 {
+    protected $selects = array(
+        'column_name as Field',
+        'column_type as Type',
+        'is_nullable as Null',
+        'column_key as Key',
+        'column_default as Default',
+        'extra as Extra',
+        'data_type as Data_Type'
+    );
+
+
     /**
      * @var String
      */
@@ -63,31 +74,49 @@ class DbSeeding extends DbExporter
 
         $stub = "";
         // Loop over the tables
-        foreach ($tables as $key => $value) {
+        foreach ($tables as $key => $value) 
+        {
             // Do not export the ignored tables
-            if (in_array($value['table_name'], self::$ignore)) {
+            if (in_array($value['table_name'], self::$ignore)) 
+            {
                 continue;
             }
+            
+
+            $columnInfo = [];
+
+            foreach($tableDescribes as $tableDescribe)
+            {
+                $columnInfo[$tableDescribe->Field] = $tableDescribe;
+            }
+
             $tableName = $value['table_name'];
             $tableData = $this->getTableData($value['table_name']);
             $insertStub = "";
 
-            foreach ($tableData as $obj) {
+            foreach ($tableData as $obj) 
+            {
+
                 $insertStub .= "
             array(\n";
-                foreach ($obj as $prop => $value) {
-                    $insertStub .= $this->insertPropertyAndValue($prop, $value);
+                foreach ($obj as $prop => $value) 
+                {
+                    $insertStub .= $this->insertPropertyAndValue($prop, $value,$columnInfo[$prop]);
                 }
 
-                if (count($tableData) > 1) {
+                if (count($tableData) > 1) 
+                {
                     $insertStub .= "            ),\n";
-                } else {
+                } 
+                else 
+                {
                     $insertStub .= "            )\n";
                 }
             }
 
             if ($this->hasTableData($tableData)) {
                 $stub .= "
+        DB::table('" . $tableName . "')->truncate();
         DB::table('" . $tableName . "')->insert(array(
             {$insertStub}
         ));";
@@ -115,14 +144,17 @@ class DbSeeding extends DbExporter
         return $template;
     }
 
-    private function insertPropertyAndValue($prop, $value)
+    private function insertPropertyAndValue($prop, $value,$columnInfo)
     {
         $prop = addslashes($prop);
         $value = addslashes($value);
         if (is_numeric($value)) {
             return "                '{$prop}' => {$value},\n";
         } elseif($value == '') {
-            return "                '{$prop}' => NULL,\n";
+            if($columnInfo->Null == 'NO')
+                return "                '{$prop}' => '',\n";
+            else
+                return "                '{$prop}' => NULL,\n";
         } else {
             return "                '{$prop}' => '{$value}',\n";
         }
