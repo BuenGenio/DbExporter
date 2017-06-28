@@ -81,7 +81,7 @@ class DbSeeding extends DbExporter
             {
                 continue;
             }
-            
+            $tableDescribes = $this->getTableDescribes($value['table_name']);
 
             $columnInfo = [];
 
