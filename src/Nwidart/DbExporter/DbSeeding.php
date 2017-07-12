@@ -52,9 +52,13 @@ class DbSeeding extends DbExporter
 
         $seed = $this->compile();
 
-        $filename = Str::camel($this->database) . "TableSeeder";
+        $filename = studly_case($this->database) . "TableSeeder";
 
-        file_put_contents(config('db-exporter.export_path.seeds')."{$filename}.php", $seed);
+        \Log::info($this->database . " => " . $filename);
+
+        $result = file_put_contents(config('db-exporter.export_path.seeds')."{$filename}.php", $seed);
+
+        \Log::info("put $result => " . config('db-exporter.export_path.seeds'));
     }
 
     /**
@@ -138,7 +142,7 @@ class DbSeeding extends DbExporter
         $template = File::get(__DIR__ . '/templates/seed.txt');
 
         // Replace the classname
-        $template = str_replace('{{className}}', \Str::camel($this->database) . "TableSeeder", $template);
+        $template = str_replace('{{className}}', studly_case($this->database) . "TableSeeder", $template);
         $template = str_replace('{{run}}', $this->seedingStub, $template);
 
         return $template;
@@ -147,7 +151,8 @@ class DbSeeding extends DbExporter
     private function insertPropertyAndValue($prop, $value,$columnInfo)
     {
         $prop = addslashes($prop);
-        $value = addslashes($value);
+        $value = str_replace('$','\$',addslashes($value));
+        //$value = addslashes($value);
         if (is_numeric($value)) {
             return "                '{$prop}' => {$value},\n";
         } elseif($value == '') {
@@ -156,7 +161,7 @@ class DbSeeding extends DbExporter
             else
                 return "                '{$prop}' => NULL,\n";
         } else {
-            return "                '{$prop}' => '{$value}',\n";
+            return "                '{$prop}' => \"{$value}\",\n";
         }
     }
 
