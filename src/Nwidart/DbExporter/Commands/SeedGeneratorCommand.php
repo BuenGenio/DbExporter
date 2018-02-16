@@ -24,7 +24,7 @@ class SeedGeneratorCommand extends GeneratorCommand
         $this->handler = $handler;
     }
 
-    public function fire()
+    public function handle()
     {
         $this->comment("Preparing the seeder class for database {$this->getDatabaseName()}");
 

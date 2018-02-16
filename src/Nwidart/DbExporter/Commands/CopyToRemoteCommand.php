@@ -32,7 +32,7 @@ class CopyToRemoteCommand extends GeneratorCommand
         $this->server = $server;
     }
 
-    public function fire()
+    public function handle()
     {
         $succes = $this->handleOptions();
         if ($succes) {

@@ -23,7 +23,7 @@ class MigrationsGeneratorCommand extends GeneratorCommand
         $this->handler = $handler;
     }
 
-    public function fire()
+    public function handle()
     {
         $database = $this->argument('database');
 
