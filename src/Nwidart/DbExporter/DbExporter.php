@@ -8,8 +8,19 @@ abstract class DbExporter
      * Contains the ignore tables
      * @var array $ignore
      */
-    public static $ignore = array('migrations');
+    public static $ignore = array('migrations','sqlite_sequence');
     public static $remote;
+
+    
+    /**
+     * Get laravel db driver name
+     * @return string
+     */
+    protected function getDriver() {
+        $connection = config('database.default');
+        $driver = config("database.connections.{$connection}.driver");
+        return $driver;
+    }
 
     /**
      * Get all the tables
@@ -18,7 +29,13 @@ abstract class DbExporter
     protected function getTables()
     {
         $pdo = DB::connection()->getPdo();
-        return $pdo->query('SELECT table_name FROM information_schema.tables WHERE table_schema="' . $this->database . '"');
+        switch($this->getDriver()) {
+            case 'sqlite':
+                return $pdo->query('SELECT name FROM sqlite_master WHERE type=\'table\'')->fetchAll(\PDO::FETCH_COLUMN);
+            case 'mysql':
+            default:
+        }
+        return $pdo->query('SELECT table_name FROM information_schema.tables WHERE table_schema="' . $this->database . '"')->fetchAll(\PDO::FETCH_COLUMN);
     }
 
     public function getTableIndexes($table)
@@ -34,10 +51,32 @@ abstract class DbExporter
      */
     protected function getTableDescribes($table)
     {
+        $pdo = DB::connection()->getPdo();
+        switch($this->getDriver()) {
+            case 'sqlite':
+                return $this->getTableDescribesSQLite($table);
+            case 'mysql':
+            default:
+        }
         return DB::table('information_schema.columns')
             ->where('table_schema', '=', $this->database)
             ->where('table_name', '=', $table)
             ->get($this->selects);
+    }
+
+    protected function getTableDescribesSQLite($table) {
+        $sqliteInfo = $pdo->query('PRAGMA table_info('.$pdo->quote($table).')')->fetchAll(\PDO::FETCH_ASSOC);
+
+        //Returns mysql format. Some more difficult translations have been excluded for now.
+        return [
+            "Field" => $sqliteInfo['name'],
+            // "Type" => $sqliteInfo[''], // eg "int(10) unsigned"
+            "Null" => $sqliteInfo['notnull'] == '0' ? 'YES' : 'NO',
+            "Key" => $sqliteInfo['pk']=='1' ? "PRI" : "",
+            "Default" => $sqliteInfo['dflt_value'],
+            // "Extra" => $sqliteInfo[''], // eg: "auto_increment"
+            // "Data_Type" => $sqliteInfo[''],  // mappings : ['integer' => 'int', ... ]
+        ];
     }
 
     /**

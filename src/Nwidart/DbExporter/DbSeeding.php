@@ -78,14 +78,14 @@ class DbSeeding extends DbExporter
 
         $stub = "";
         // Loop over the tables
-        foreach ($tables as $key => $value) 
+        foreach ($tables as $tableName) 
         {
             // Do not export the ignored tables
-            if (in_array($value['table_name'], self::$ignore)) 
+            if (in_array($tableName, self::$ignore)) 
             {
                 continue;
             }
-            $tableDescribes = $this->getTableDescribes($value['table_name']);
+            $tableDescribes = $this->getTableDescribes($tableName);
 
             $columnInfo = [];
 
@@ -94,8 +94,7 @@ class DbSeeding extends DbExporter
                 $columnInfo[$tableDescribe->Field] = $tableDescribe;
             }
 
-            $tableName = $value['table_name'];
-            $tableData = $this->getTableData($value['table_name']);
+            $tableData = $this->getTableData($tableName);
             $insertStub = "";
 
             foreach ($tableData as $obj) 
