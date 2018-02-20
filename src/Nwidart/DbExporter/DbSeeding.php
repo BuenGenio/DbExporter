@@ -147,20 +147,22 @@ class DbSeeding extends DbExporter
         return $template;
     }
 
+    private static function escapeForPhpSingleQuote($value)
+    {
+        return strtr($value, ['\''=>'\\\'', '\\' => '\\\\']);
+    }
+
     private function insertPropertyAndValue($prop, $value,$columnInfo)
     {
-        $prop = addslashes($prop);
-        $value = str_replace('$','\$',addslashes($value));
-        //$value = addslashes($value);
+        $propEsc = self::escapeForPhpSingleQuote($prop);
+        $valueEsc = self::escapeForPhpSingleQuote($value);
+
         if (is_numeric($value)) {
-            return "                '{$prop}' => {$value},\n";
-        } elseif($value == '') {
-            if($columnInfo->Null == 'NO')
-                return "                '{$prop}' => '',\n";
-            else
-                return "                '{$prop}' => NULL,\n";
+            return "                '{$propEsc}' => {$valueEsc},\n";
+        } elseif($value === null) {
+            return "                '{$propEsc}' => NULL,\n";
         } else {
-            return "                '{$prop}' => \"{$value}\",\n";
+            return "                '{$propEsc}' => '{$valueEsc}',\n";
         }
     }
 
