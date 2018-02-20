@@ -5,6 +5,18 @@ use Illuminate\Database\Seeder;
 class {{className}} extends Seeder {
     public function run()
     {
+        switch(config("database.connections.".config('database.default').".driver")) {
+          case 'mysql':
+              DB::statement("SET FOREIGN_KEY_CHECKS=0");
+              break;
+        }
+
         {{run}}
+
+        switch(config("database.connections.".config('database.default').".driver")) {
+          case 'mysql':
+              DB::statement("SET FOREIGN_KEY_CHECKS=1");
+              break;
+        }
     }
 }
