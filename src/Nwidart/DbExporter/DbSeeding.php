@@ -52,7 +52,7 @@ class DbSeeding extends DbExporter
 
         $seed = $this->compile();
 
-        $filename = studly_case($this->database) . "TableSeeder";
+        $filename = studly_case(basename($this->database)) . "TableSeeder";
 
         \Log::info($this->database . " => " . $filename);
 

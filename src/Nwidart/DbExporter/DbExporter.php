@@ -65,18 +65,21 @@ abstract class DbExporter
     }
 
     protected function getTableDescribesSQLite($table) {
+        $pdo = DB::connection()->getPdo();
         $sqliteInfo = $pdo->query('PRAGMA table_info('.$pdo->quote($table).')')->fetchAll(\PDO::FETCH_ASSOC);
 
-        //Returns mysql format. Some more difficult translations have been excluded for now.
-        return [
-            "Field" => $sqliteInfo['name'],
-            // "Type" => $sqliteInfo[''], // eg "int(10) unsigned"
-            "Null" => $sqliteInfo['notnull'] == '0' ? 'YES' : 'NO',
-            "Key" => $sqliteInfo['pk']=='1' ? "PRI" : "",
-            "Default" => $sqliteInfo['dflt_value'],
-            // "Extra" => $sqliteInfo[''], // eg: "auto_increment"
-            // "Data_Type" => $sqliteInfo[''],  // mappings : ['integer' => 'int', ... ]
-        ];
+        return collect($sqliteInfo)->map(function ($sqliteFieldInfo) {
+            //Returns mysql format. Some more difficult translations have been excluded for now.
+            return (object)[
+                "Field" => $sqliteFieldInfo['name'],
+                // "Type" => $sqliteFieldInfo[''], // eg "int(10) unsigned"
+                "Null" => $sqliteFieldInfo['notnull'] == '0' ? 'YES' : 'NO',
+                "Key" => $sqliteFieldInfo['pk']=='1' ? "PRI" : "",
+                "Default" => $sqliteFieldInfo['dflt_value'],
+                // "Extra" => $sqliteFieldInfo[''], // eg: "auto_increment"
+                // "Data_Type" => $sqliteFieldInfo[''],  // mappings : ['integer' => 'int', ... ]
+            ];
+        });
     }
 
     /**

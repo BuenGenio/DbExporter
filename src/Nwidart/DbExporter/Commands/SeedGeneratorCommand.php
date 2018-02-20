@@ -53,7 +53,7 @@ class SeedGeneratorCommand extends GeneratorCommand
 
     private function getFilename()
     {
-        $filename = Str::camel($this->getDatabaseName()) . "TableSeeder";
+        $filename = Str::camel(basename($this->getDatabaseName())) . "TableSeeder";
         return config('db-exporter.export_path.seeds')."{$filename}.php";
     }
 
