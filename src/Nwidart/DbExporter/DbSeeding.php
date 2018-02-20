@@ -52,7 +52,7 @@ class DbSeeding extends DbExporter
 
         $seed = $this->compile();
 
-        $filename = studly_case(basename($this->database)) . "TableSeeder";
+        $filename = studly_case(preg_replace('/[^a-z0-9]/i','',basename($this->database))) . "TableSeeder";
 
         \Log::info($this->database . " => " . $filename);
 
@@ -141,7 +141,7 @@ class DbSeeding extends DbExporter
         $template = File::get(__DIR__ . '/templates/seed.txt');
 
         // Replace the classname
-        $template = str_replace('{{className}}', studly_case($this->database) . "TableSeeder", $template);
+        $template = str_replace('{{className}}', studly_case(preg_replace('/[^a-z0-9]/i','',basename($this->database))) . "TableSeeder", $template);
         $template = str_replace('{{run}}', $this->seedingStub, $template);
 
         return $template;
